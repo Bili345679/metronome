@@ -4,11 +4,11 @@
 
 v0.6
 增加主题色功能
-![v0.6预览图](https://github.com/Bili345679/metronome/blob/main/preview/v0.4.jpg)
+![v0.6预览图](https://github.com/Bili345679/metronome/blob/main/preview/v0.6.jpg)
 
 v0.5
 调整背景色闪烁样式
-[v0.5预览图](https://github.com/Bili345679/metronome/blob/main/preview/v0.4.jpg)
+[v0.5预览图](https://github.com/Bili345679/metronome/blob/main/preview/v0.5.jpg)
 
 v0.4
 加入背景闪烁功能，可能造成不适，请酌情使用
