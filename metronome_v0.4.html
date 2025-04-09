@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节拍器</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .block {
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 20px;
+        }
+
+        #bpmDisplay {
+            font-size: 100px;
+            margin: 0;
+            padding: 0;
+            color: #2f5bc0;
+            font-weight: bold;
+        }
+
+        #beatDisplay {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0 20px;
+        }
+
+        #beatDisplay .beat {
+            width: 20px;
+            height: 20px;
+            margin: 0 5px;
+            background-color: #c4c4c4;
+            border-radius: 3px;
+            opacity: 0.5;
+        }
+
+        #beatDisplay .beat.firstBeat.active {
+            background-color: #e92f67;
+            opacity: 1;
+        }
+
+        #beatDisplay .beat.active {
+            background-color: #4977e2;
+            opacity: 1;
+        }
+
+        .controller {
+            margin: 5px;
+            width: 60%;
+            max-width: 300px;
+            height: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controller span {
+            width: 35%;
+        }
+
+        .controller .right {
+            width: 55%;
+            height: 90%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controller input,
+        select,
+        button {
+            width: 100%;
+            height: 100%;
+            border: 2px solid #3e6bd7;
+            border-radius: 3px;
+            line-height: 100%;
+        }
+
+        .controller input {
+            width: calc(100% - 10px);
+            height: 72%;
+            padding: 2px 3px 2px 3px;
+        }
+
+        .controller #beat {
+            width: calc(100% - 80px);
+            text-align: center;
+        }
+
+        .controller #beatSubtract,
+        #beatPlus {
+            width: 30px;
+            background-color: #3e6bd7;
+            font-size: 25px;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        #bpmInputRange {
+            width: 100%;
+        }
+
+        .controller .radio {
+            width: 40%;
+            background-color: #fff;
+        }
+
+        .controller .radio.checked {
+            width: 40%;
+            background-color: #3e6bd7;
+            color: #FFF;
+        }
+
+        .controller .radio.checked:hover {
+            background-color: #5f87e2;
+        }
+
+        #start {
+            margin-top: 30px;
+            width: 50%;
+            max-width: 250px;
+            height: 70px;
+            font-size: 30px;
+            background-color: #0000;
+            border: 2px solid #3e6bd7;
+            border-radius: 3px;
+            color: #3e6bd7;
+        }
+
+        #start:hover {
+            background-color: #d0e0ff;
+        }
+
+        #start.checked {
+            background-color: #3e6bd7;
+            color: #FFF;
+        }
+
+        #start.checked:hover {
+            background-color: #5f87e2;
+        }
+
+        @keyframes changeBodyColorFirstBeat {
+            0% {
+                background-color: "";
+            }
+
+            5% {
+                background-color: #f9c6d5;
+            }
+
+            95% {
+                background-color: #f9c6d5;
+            }
+
+            100% {
+                background-color: "";
+            }
+        }
+
+        @keyframes changeBodyColor {
+            0% {
+                background-color: "";
+            }
+
+            5% {
+                background-color: #cad7f4;
+            }
+
+            95% {
+                background-color: #cad7f4;
+            }
+
+            100% {
+                background-color: "";
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="block">
+        <p id="bpmDisplay">120</p>
+        <div id="beatDisplay"></div>
+        <div class="controller">
+            <span>bpm</span>
+            <div class="right">
+                <input id="bpmInput" value="120" type="number">
+            </div>
+        </div>
+        <div class="controller"><input type="range" id="bpmInputRange" min="1" max="300" step="1" value="120"></div>
+        <div class="controller">
+            <span>节拍</span>
+            <div class="right">
+                <button id="beatSubtract">-</button>
+                <input id="beat" value="4" type="number">
+                <button id="beatPlus">+</button>
+            </div>
+        </div>
+        <div class="controller">
+            <span>音效</span>
+            <div class="right">
+                <select id="sound">
+                    <!-- <option value="custom">自定义</option> -->
+                    <option value="sine">弦波</option>
+                    <option value="square">方波</option>
+                    <option value="triangle">三角波</option>
+                    <option value="sawtooth">锯齿波</option>
+                </select>
+            </div>
+        </div>
+        <div class="controller">
+            <span>音量</span>
+            <div class="right">
+                <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+        <div class="controller">
+            <button id="firstBeat" class="radio checked">首拍音效</button>
+            <button id="bodyBackgroundColor" class="radio">背景变色</button>
+        </div>
+        <button id="start">开始</button>
+    </div>
+</body>
+<script>
+    const body = document.body;
+    const bpmDisplay = document.getElementById('bpmDisplay');
+    const beatDisplay = document.getElementById('beatDisplay');
+
+    const bpmInput = document.getElementById('bpmInput');
+    const beatSubtract = document.getElementById('beatSubtract');
+    const bpmInputRange = document.getElementById('bpmInputRange');
+    const beatPlus = document.getElementById('beatPlus');
+    const beatInput = document.getElementById('beat');
+    const soundInput = document.getElementById('sound');
+    const volumeInput = document.getElementById('volume');
+    const firstBeat = document.getElementById('firstBeat');
+    const bodyBackgroundColor = document.getElementById('bodyBackgroundColor');
+    const startButton = document.getElementById('start');
+
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    let started = false
+    let beatInterval
+    let currentBeat
+    let startTime
+    let beatCount
+
+    // 监听空格键
+    document.addEventListener('keydown', (event) => {
+        if (event.code === 'Space') {
+            event.preventDefault(); // 阻止默认行为
+            if (started) {
+                stop();
+            } else {
+                start();
+            }
+        }
+    });
+
+    // bpm
+    bpmInput.addEventListener('change', () => {
+        bpmInputChange();
+    });
+    bpmInput.addEventListener('input', () => {
+        bpmInputChange();
+    });
+    function bpmInputChange() {
+        bpmDisplay.innerText = bpmInput.value;
+        if (bpmInput.value > bpmInputRange.getAttribute('max')) {
+            bpmInputRange.setAttribute('max', bpmInput.value);
+        }
+        bpmInputRange.value = bpmInput.value;
+        if (started) {
+            stop();
+            start();
+        }
+    }
+    bpmInputRange.addEventListener('input', () => {
+        bpmInput.value = bpmInputRange.value;
+        bpmDisplay.innerText = bpmInput.value;
+        if (started) {
+            stop();
+            start();
+        }
+    });
+
+    // 节拍
+    beatSubtract.addEventListener('click', () => {
+        let beats = parseInt(beatInput.value);
+        if (beats > 1) {
+            beatInput.value = beats - 1;
+            initBeatDisplay();
+            if (started) {
+                stop();
+                start();
+            }
+        }
+    });
+    beatInput.addEventListener('change', () => {
+        if (started) {
+            stop();
+            start();
+        }
+    });
+    beatPlus.addEventListener('click', () => {
+        let beats = parseInt(beatInput.value);
+        if (beats < 16) {
+            beatInput.value = beats + 1;
+            initBeatDisplay();
+            if (started) {
+                stop();
+                start();
+            }
+        }
+    });
+
+    // 可视化效果
+    function initBeatDisplay() {
+        let beats = parseInt(beatInput.value);
+        let html = '';
+        for (let i = 0; i < beats; i++) {
+            html += `<span class="beat${i == 0 ? " firstBeat" : ""}"></span>`;
+        }
+        beatDisplay.innerHTML = html;
+    }
+    initBeatDisplay();
+    function updateBeatDisplay() {
+        let beats = parseInt(beatInput.value);
+        let beatElements = beatDisplay.querySelectorAll('.beat');
+        for (let i = 0; i < beats; i++) {
+            if (i === currentBeat) {
+                beatElements[i].classList.add('active');
+            } else {
+                beatElements[i].classList.remove('active');
+            }
+        }
+    }
+
+    // 首拍音效
+    let firstBeatSound = true;
+    firstBeat.addEventListener('click', () => {
+        firstBeatSound = !firstBeatSound;
+        if (firstBeatSound) {
+            firstBeat.classList.add('checked');
+        } else {
+            firstBeat.classList.remove('checked');
+        }
+    });
+    // 背景变色
+    let bodyBackgroundColorFlag = false;
+    bodyBackgroundColor.addEventListener('click', () => {
+        bodyBackgroundColorFlag = !bodyBackgroundColorFlag;
+        if (bodyBackgroundColorFlag) {
+            bodyBackgroundColor.classList.add('checked');
+        } else {
+            bodyBackgroundColor.classList.remove('checked');
+        }
+    });
+
+    // 开始按钮
+    startButton.addEventListener('click', () => {
+        if (started) {
+            stop();
+        } else {
+            start();
+        }
+    });
+
+    // 启动节拍器
+    function start() {
+        startButton.classList.add('checked')
+        startButton.innerText = '停止';
+        initBeatDisplay();
+        started = true;
+        startTime = Date.now();
+        beatCount = 0;
+
+        let beatDuration = 60 / parseInt(bpmInput.value) * 1000; // 每拍时长 (毫秒)
+        let beats = parseInt(beatInput.value);
+        currentBeat = 0;
+
+        beatInterval = setInterval(() => {
+            beatCount++
+            console.log(60 * 1000 / ((Date.now() - startTime) / beatCount))
+
+            playSound(currentBeat === 0); // 第一拍特殊音效
+            updateBeatDisplay();
+            currentBeat = (currentBeat + 1) % beats;
+        }, beatDuration);
+    }
+
+    // 停止节拍器
+    function stop() {
+        startButton.classList.remove('checked');
+        startButton.innerText = '开始';
+        started = false;
+        clearInterval(beatInterval);
+    }
+
+    // 音效
+    function playSound(isFirstBeat) {
+        let oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        // if (soundInput.value == "custom") {
+        //     const real = new Float32Array([0, 1, 0.5, 0.25]); // 实部
+        //     const imag = new Float32Array([0, 0.5, 0.25, 0.125]); // 虚部
+        //     const periodicWave = audioContext.createPeriodicWave(real, imag);
+        //     oscillator.setPeriodicWave(periodicWave);
+        // } else {
+        //     oscillator.type = soundInput.value;
+        // }
+        oscillator.type = soundInput.value;
+        oscillator.frequency.setValueAtTime((isFirstBeat && firstBeatSound) ? 880 : 440, audioContext.currentTime);
+
+        let volume = volumeInput.value;
+        if (!isFirstBeat) {
+            volume *= 1.1;
+        }
+        gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        // 改变背景颜色
+        if (bodyBackgroundColorFlag) {
+            if (isFirstBeat) {
+                body.style.animation = "changeBodyColorFirstBeat 0.1s forwards";
+            } else {
+                body.style.animation = "changeBodyColor 0.1s forwards";
+            }
+            setTimeout(() => {
+                body.style.animation = "";
+            }, 100);
+        }
+
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.1); // 每个音效播放 0.1 秒
+
+    }
+</script>
+
+</html>
