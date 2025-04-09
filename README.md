@@ -2,6 +2,10 @@
 
 [在线预览](https://bili345679.github.io/metronome/index.html)
 
+v0.6.1
+修复v0.6颜色选择换行的问题
+[源码](https://github.com/Bili345679/metronome/blob/main/src/metronome_v0.6.1.html)
+
 v0.6
 [源码](https://github.com/Bili345679/metronome/blob/main/src/metronome_v0.6.html)
 增加主题色功能
