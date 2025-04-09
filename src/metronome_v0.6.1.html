@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节拍器</title>
+    <style>
+        /* :root {
+            --theme-color: #3e6bd7;
+            --theme-color-light: #d0e0ff;
+            --first-beat-color: #e92f67;
+            --first-beat-color-light: #f9c6d5;
+        } */
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        #background {
+            position: absolute;
+            padding: 0;
+            margin: 0;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .background_block {
+            flex-grow: 1;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .background_block.active {
+            /* outline: 2px solid var(--theme-color);
+            outline-offset: -2px; */
+            background-color: var(--theme-color-light);
+        }
+
+        .background_block.firstBeat.active {
+            /* outline: 2px solid var(--first-beat-color); */
+            background-color: var(--first-beat-color-light);
+        }
+
+        .block {
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 20px;
+        }
+
+        #colorTypeSelect {
+            width: 45%;
+        }
+
+        #colorGroupTypeSelect {
+            width: 45%;
+        }
+
+        #colorGroupTypeSelect option.easterEgg {
+            display: none;
+        }
+
+        .controller.colorSelectGroup {
+            display: none;
+        }
+
+        /* .controller.colorSelectGroup.VeasterEgg {
+            display: none;
+        }
+
+        .controller.colorSelectGroup.BDEasterEgg {
+            display: none;
+        } */
+
+
+        .colorSelect {
+            width: 25px;
+            height: 25px;
+            border-radius: 3px;
+        }
+
+        #bpmDisplay {
+            font-size: 100px;
+            margin: 0;
+            padding: 0;
+            color: var(--theme-color);
+            font-weight: bold;
+        }
+
+        #beatDisplay {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0 20px;
+        }
+
+        #beatDisplay .beat {
+            width: 20px;
+            height: 20px;
+            margin: 0 5px;
+            background-color: #c4c4c4;
+            border-radius: 3px;
+            opacity: 0.5;
+        }
+
+        #beatDisplay .beat.firstBeat.active {
+            background-color: var(--first-beat-color);
+            opacity: 1;
+        }
+
+        #beatDisplay .beat.active {
+            background-color: var(--theme-color);
+            opacity: 1;
+        }
+
+        .controller {
+            margin: 5px;
+            width: 60%;
+            max-width: 300px;
+            height: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controller span {
+            width: 35%;
+        }
+
+        .controller .right {
+            width: 55%;
+            height: 90%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controller input,
+        select,
+        button {
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--theme-color);
+            border-radius: 3px;
+            line-height: 100%;
+        }
+
+        .controller input {
+            width: calc(100% - 10px);
+            height: 72%;
+            padding: 2px 3px 2px 3px;
+        }
+
+        .controller input[type="range"] {
+            accent-color: var(--theme-color);
+        }
+
+        .controller #beat {
+            width: calc(100% - 80px);
+            text-align: center;
+        }
+
+        .controller #beatSubtract,
+        #beatPlus {
+            width: 30px;
+            background-color: var(--theme-color);
+            font-size: 25px;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        #bpmInputRange {
+            width: 100%;
+        }
+
+        .controller .radio {
+            width: 40%;
+            background-color: #fff;
+        }
+
+        .controller .radio:hover {
+            background-color: var(--theme-color-light);
+        }
+
+        .controller .radio.checked {
+            width: 40%;
+            background-color: var(--theme-color);
+            color: #FFF;
+        }
+
+        .controller .radio.checked:hover {
+            background-color: var(--theme-color-light);
+        }
+
+        #start {
+            margin-top: 30px;
+            width: 50%;
+            max-width: 250px;
+            height: 70px;
+            font-size: 30px;
+            background-color: #0000;
+            border: 2px solid var(--theme-color);
+            border-radius: 3px;
+            color: var(--theme-color);
+        }
+
+        #start:hover {
+            background-color: var(--theme-color-light);
+        }
+
+        #start.checked {
+            background-color: var(--theme-color);
+            color: #FFF;
+        }
+
+        #start.checked:hover {
+            background-color: var(--theme-color-light);
+        }
+
+        @keyframes changeBodyColorFirstBeat {
+            0% {
+                background-color: "";
+            }
+
+            5% {
+                background-color: var(--first-beat-color-light);
+            }
+
+            95% {
+                background-color: var(--first-beat-color-light);
+            }
+
+            100% {
+                background-color: "";
+            }
+        }
+
+        @keyframes changeBodyColor {
+            0% {
+                background-color: "";
+            }
+
+            5% {
+                background-color: var(--theme-color-light);
+            }
+
+            95% {
+                background-color: var(--theme-color-light);
+            }
+
+            100% {
+                background-color: "";
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="background">
+        <div class="background_block firstBeat active"></div>
+        <div class="background_block"></div>
+        <div class="background_block"></div>
+        <div class="background_block"></div>
+    </div>
+    <div class="block">
+        <div class="controller">
+            <select id="colorTypeSelect">
+                <option value="">颜色选择</option>
+                <option value="theme">主题</option>
+                <option value="firstBeat">首拍</option>
+            </select>
+            <select id="colorGroupTypeSelect">
+                <option value="normal">普通</option>
+                <option class="easterEgg VEasterEgg" value="v">VOCALOID</option>
+                <option class="easterEgg BDEasterEgg" value="BDppp">Poppin'Party</option>
+                <option class="easterEgg BDEasterEgg" value="BDag">Afterglow</option>
+                <option class="easterEgg BDEasterEgg" value="BDrsl">Roselia</option>
+                <option class="easterEgg BDEasterEgg" value="BDhhw">Hello, Happy World!</option>
+                <option class="easterEgg BDEasterEgg" value="BDmfnc">Morfonica</option>
+                <option class="easterEgg BDEasterEgg" value="BDras">RAISE A SUILEN</option>
+                <option class="easterEgg BDEasterEgg" value="BDmh">MyGO!!!!!</option>
+                <option class="easterEgg BDEasterEgg" value="BDmjc">Ave Mujica</option>
+                <option class="easterEgg BDEasterEgg" value="BDmt">MewType</option>
+            </select>
+        </div>
+        <div class="controller colorSelectGroup easterEgg VeasterEgg" colorGroupType="v">
+            <button class="colorSelect" value="miku" style="background-color: #39c5bb;"></button>
+            <button class="colorSelect" value="mikuHairAccessory" style="background-color: #e71079;"></button>
+            <button class="colorSelect" value="lty" style="background-color: #66CCFF;"></button>
+            <button class="colorSelect" value="rin" style="background-color: #FFA500;"></button>
+            <button class="colorSelect" value="ren" style="background-color: #FFE211;"></button>
+            <button class="colorSelect" value="luka" style="background-color: #FAAFBE;"></button>
+            <button class="colorSelect" value="meiko" style="background-color: #D80000;"></button>
+            <button class="colorSelect" value="kaito" style="background-color: #0000FF;"></button>
+        </div>
+        <div class="controller colorSelectGroup easterEgg VeasterEgg" colorGroupType="v">
+            <button class="colorSelect" value="teto" style="background-color: #d74157;"></button>
+            <button class="colorSelect" value="haku" style="background-color: #909090;"></button>
+            <button class="colorSelect" value="neru" style="background-color: #fbe677;"></button>
+            <button class="colorSelect" value="lzl" style="background-color: #EE0000;"></button>
+            <button class="colorSelect" value="yh" style="background-color: #00FFCC;"></button>
+        </div>
+        <div class="controller colorSelectGroup easterEgg BDEasterEgg" colorGroupType="BDppp">
+            <button class="colorSelect" value="pppKasumi" style="background-color: #FF5522;"></button>
+            <button class="colorSelect" value="pppTae" style="background-color: #0077DD;"></button>
+            <button class="colorSelect" value="pppArisa" style="background-color: #AA66DD;"></button>
+            <button class="colorSelect" value="pppRimi" style="background-color: #FF55BB;"></button>
+            <button class="colorSelect" value="pppSaaya" style="background-color: #FFCC11;"></button>
+        </div>
+        <div class="controller colorSelectGroup easterEgg BDEasterEgg" colorGroupType="BDag">
+            <button class="colorSelect" value="agRan" style="background-color: #EE0022;"></button>
+            <button class="colorSelect" value="agMoka" style="background-color: #00CCAA;"></button>
+            <button class="colorSelect" value="agHimari" style="background-color: #FF9999;"></button>
+            <button class="colorSelect" value="agTomoe" style="background-color: #BB0033;"></button>
+            <button class="colorSelect" value="agTsugumi" style="background-color: #FFEE88;"></button>
+        </div>
+        <div class="controller colorSelectGroup easterEgg BDEasterEgg" colorGroupType="BDrsl">
+            <button class="colorSelect" value="ppAya" style="background-color: #FF88BB;"></button>
+            <button class="colorSelect" value="ppHina" style="background-color: #55DDEE;"></button>
+            <button class="colorSelect" value="ppChisato" style="background-color: #FFEEAA;"></button>
+            <button class="colorSelect" value="ppMaya" style="background-color: #99DD88;"></button>
+            <button class="colorSelect" value="ppEve" style="background-color: #DDBBFF;"></button>
+        </div>
+        <div class="controller colorSelectGroup easterEgg BDEasterEgg" colorGroupType="BDrsl">
+            <button class="colorSelect" value="rslYukina" style="background-color: #881188;"></button>
+            <button class="colorSelect" value="rslSayo" style="background-color: #00AABB;"></button>
+            <button class="colorSelect" value="rslLisa" style="background-color: #DD2200;"></button>
+            <button class="colorSelect" value="rslAko" style="background-color: #DD0088;"></button>
+            <button class="colorSelect" value="rslRinko" style="background-color: #BBBBBB;"></button>
+        </div>
+        <div class="controller colorSelectGroup easterEgg BDEasterEgg" colorGroupType="BDhhw">
+            <button class="colorSelect" value="hhwKokoro" style="background-color: #FFEE22;"></button>
+            <button class="colorSelect" value="hhwKaoru" style="background-color: #AA33CC;"></button>
+            <button class="colorSelect" value="hhwHagumi" style="background-color: #FF9922;"></button>
+            <button class="colorSelect" value="hhwKanon" style="background-color: #44DDFF;"></button>
+            <button class="colorSelect" value="hhwMichelle" style="background-color: #006599;"></button>
+            <button class="colorSelect" value="hhwBear" style="background-color: #DD33CC;"></button>
+        </div>
+        <div class="controller colorSelectGroup easterEgg BDEasterEgg" colorGroupType="BDmfnc">
+            <button class="colorSelect" value="mfncMashiro" style="background-color: #6677CC;"></button>
+            <button class="colorSelect" value="mfncToko" style="background-color: #EE6666;"></button>
+            <button class="colorSelect" value="mfncNanami" style="background-color: #EE7744;"></button>
+            <button class="colorSelect" value="mfncTsukushi" style="background-color: #EE7788;"></button>
+            <button class="colorSelect" value="mfncRui" style="background-color: #669988;"></button>
+        </div>
+        <div class="controller colorSelectGroup easterEgg BDEasterEgg" colorGroupType="BDras">
+            <button class="colorSelect" value="rasLayer" style="background-color: #CC0000;"></button>
+            <button class="colorSelect" value="rasLock" style="background-color: #AAEE22;"></button>
+            <button class="colorSelect" value="rasMasking" style="background-color: #EEBB44;"></button>
+            <button class="colorSelect" value="rasPareo" style="background-color: #FF99BB;"></button>
+            <button class="colorSelect" value="rasChu2" style="background-color: #00BBFF;"></button>
+        </div>
+        <div class="controller colorSelectGroup easterEgg BDEasterEgg" colorGroupType="BDmh">
+            <button class="colorSelect" value="mgTomori" style="background-color: #77bbdd;"></button>
+            <button class="colorSelect" value="mgAnon" style="background-color: #ff8899;"></button>
+            <button class="colorSelect" value="mgRana" style="background-color: #77dd77;"></button>
+            <button class="colorSelect" value="mgSoyo" style="background-color: #ffdd88;"></button>
+            <button class="colorSelect" value="mgTaki" style="background-color: #7777aa;"></button>
+        </div>
+        <div class="controller colorSelectGroup easterEgg BDEasterEgg" colorGroupType="BDmjc">
+            <button class="colorSelect" value="mjcUika" style="background-color: #BB9955;"></button>
+            <button class="colorSelect" value="mjcWakaba" style="background-color: #779977;"></button>
+            <button class="colorSelect" value="mjcUmiri" style="background-color: #335566;"></button>
+            <button class="colorSelect" value="mjcNyamu" style="background-color: #AA4477;"></button>
+            <button class="colorSelect" value="mjcTogawa" style="background-color: #7799CC;"></button>
+        </div>
+        <div class="controller colorSelectGroup easterEgg BDEasterEgg" colorGroupType="BDmt">
+            <button class="colorSelect" value="mtArale" style="background-color: #FFEE55;"></button>
+            <button class="colorSelect" value="mtNonoka" style="background-color: #FFBBCC;"></button>
+            <button class="colorSelect" value="mtRitsu" style="background-color: #4477CC;"></button>
+            <button class="colorSelect" value="mtMiyako" style="background-color: #9977CC;"></button>
+            <button class="colorSelect" value="mtYuno" style="background-color: #EE5577;"></button>
+        </div>
+        <div class="controller colorSelectGroup" colorGroupType="normal">
+            <button class="colorSelect" value="red" style="background-color: #e92f67;"></button>
+            <button class="colorSelect" value="orange" style="background-color: #ff9800;"></button>
+            <button class="colorSelect" value="yellow" style="background-color: #f0c674;"></button>
+            <button class="colorSelect" value="green" style="background-color: #8cc84b;"></button>
+            <button class="colorSelect" value="cyan" style="background-color: #00bcd4;"></button>
+            <button class="colorSelect" value="blue" style="background-color: #3e6bd7;"></button>
+            <button class="colorSelect" value="purple" style="background-color: #9b59b6;"></button>
+            <button class="colorSelect" value="pink" style="background-color: #ff69b4;"></button>
+        </div>
+        <div class="controller colorSelectGroup" colorGroupType="normal">
+            <button class="colorSelect" value="black" style="background-color: #111;"></button>
+            <button class="colorSelect" value="white" style="background-color: #eee;"></button>
+            <button class="colorSelect" value="lucency" style="background-color: #0000;"></button>
+        </div>
+        <p id="bpmDisplay">120</p>
+        <div id="beatDisplay"></div>
+        <div class="controller">
+            <span>bpm</span>
+            <div class="right">
+                <input id="bpmInput" value="120">
+            </div>
+        </div>
+        <div class="controller"><input type="range" id="bpmInputRange" min="1" max="300" step="1" value="120"></div>
+        <div class="controller">
+            <span>节拍</span>
+            <div class="right">
+                <button id="beatSubtract">-</button>
+                <input id="beat" value="4" type="number">
+                <button id="beatPlus">+</button>
+            </div>
+        </div>
+        <div class="controller">
+            <span>音效</span>
+            <div class="right">
+                <select id="sound">
+                    <!-- <option value="custom">自定义</option> -->
+                    <option value="sine">弦波</option>
+                    <option value="square">方波</option>
+                    <option value="triangle">三角波</option>
+                    <option value="sawtooth">锯齿波</option>
+                </select>
+            </div>
+        </div>
+        <div class="controller">
+            <span>音量</span>
+            <div class="right">
+                <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+        <div class="controller">
+            <button id="firstBeat" class="radio checked">首拍音效</button>
+            <button id="bodyBackgroundColor" class="radio">背景变色</button>
+        </div>
+        <button id="start">开始</button>
+    </div>
+</body>
+<script>
+    let showVEasterEgg = false;
+    let showBDEasterEgg = false;
+    // 从localStorage中获取是否显示彩蛋的值
+    if (localStorage.getItem('showVEasterEgg') != null) {
+        showVEasterEgg = localStorage.getItem('showVEasterEgg') == 'true' ? true : false;
+        console.log(showVEasterEgg)
+    }
+    if (localStorage.getItem('showBDEasterEgg') != null) {
+        showBDEasterEgg = localStorage.getItem('showBDEasterEgg') == 'true' ? true : false;
+        console.log(showBDEasterEgg)
+    }
+
+    const theme = {
+        red: {
+            "color": "#e92f67",
+            "light": "#f9c6d5",
+        },
+        orange: {
+            "color": "#ff9800",
+            "light": "#ffe0b2",
+        },
+        yellow: {
+            "color": "#f0c674",
+            "light": "#f9e6b5",
+        },
+        green: {
+            "color": "#8cc84b",
+            "light": "#d4e8b5",
+        },
+        cyan: {
+            "color": "#00bcd4",
+            "light": "#b2ebf2",
+        },
+        blue: {
+            "color": "#3e6bd7",
+            "light": "#d0e0ff",
+        },
+        purple: {
+            "color": "#9b59b6",
+            "light": "#d7c4e5",
+        },
+        pink: {
+            "color": "#ff69b4",
+            "light": "#ffb6c1",
+        },
+        // V家彩蛋
+        miku: {
+            "color": "#39c5bb",
+            "light": "#b2e0e0",
+        },
+        mikuHairAccessory: {
+            "color": "#e71079",
+            "light": "#f9c6d5",
+        },
+        lty: {
+            "color": "#66CCFF",
+            "light": "#99CCFF",
+        },
+        rin: {
+            "color": "#FFA500",
+            "light": "#FFCC80",
+        },
+        ren: {
+            "color": "#FFE211",
+            "light": "#FFEB3B",
+        },
+        luka: {
+            "color": "#FAAFBE",
+            "light": "#F8BBD0",
+        },
+        meiko: {
+            "color": "#D80000",
+            "light": "#FFCDD2",
+        },
+        kaito: {
+            "color": "#0000FF",
+            "light": "#BBDEFB",
+        },
+        teto: {
+            "color": "#d74157",
+            "light": "#f8c8d4",
+        },
+        haku: {
+            "color": "#909090",
+            "light": "#fefefe",
+        },
+        neru: {
+            "color": "#fbe677",
+            "light": "#fef9c3",
+        },
+        lzl: {
+            "color": "#EE0000",
+            "light": "#FFB2B2",
+        },
+        yh: {
+            "color": "#00FFCC",
+            "light": "#B2E0E0",
+        },
+        black: {
+            "color": "#111",
+            "light": "#333",
+        },
+        white: {
+            "color": "#eee",
+            "light": "#ddd",
+        },
+        lucency: {
+            "color": "#0000",
+            "light": "#0000",
+        },
+        // BanGDream彩蛋
+        "pppKasumi": {
+            "color": "#FF5522",
+            "light": "#FFCCB2"
+        },
+        "pppTae": {
+            "color": "#0077DD",
+            "light": "#B2DFFF"
+        },
+        "pppRimi": {
+            "color": "#FF55BB",
+            "light": "#FFB2E6"
+        },
+        "pppSaaya": {
+            "color": "#FFCC11",
+            "light": "#FFE0B2"
+        },
+        "pppArisa": {
+            "color": "#AA66DD",
+            "light": "#D6C4FF"
+        },
+        "agRan": {
+            "color": "#EE0022",
+            "light": "#FFB2B2"
+        },
+        "agMoka": {
+            "color": "#00CCAA",
+            "light": "#B2FFEB"
+        },
+        "agHimari": {
+            "color": "#FF9999",
+            "light": "#FFB2B2"
+        },
+        "agTomoe": {
+            "color": "#BB0033",
+            "light": "#FFB2CC"
+        },
+        "agTsugumi": {
+            "color": "#FFEE88",
+            "light": "#FFF2B2"
+        },
+        "ppAya": {
+            "color": "#FF88BB",
+            "light": "#FFB2D6"
+        },
+        "ppHina": {
+            "color": "#55DDEE",
+            "light": "#B2E0FF"
+        },
+        "ppChisato": {
+            "color": "#FFEEAA",
+            "light": "#FFE0B2"
+        },
+        "ppMaya": {
+            "color": "#99DD88",
+            "light": "#B2E0B2"
+        },
+        "ppEve": {
+            "color": "#DDBBFF",
+            "light": "#E0B2FF"
+        },
+        "rslYukina": {
+            "color": "#881188",
+            "light": "#D6B2FF"
+        },
+        "rslSayo": {
+            "color": "#00AABB",
+            "light": "#B2E0E6"
+        },
+        "rslLisa": {
+            "color": "#DD2200",
+            "light": "#FFB2B2"
+        },
+        "rslAko": {
+            "color": "#DD0088",
+            "light": "#FFB2E6"
+        },
+        "rslRinko": {
+            "color": "#BBBBBB",
+            "light": "#D6D6D6"
+        },
+        "hhwKokoro": {
+            "color": "#FFEE22",
+            "light": "#FFF2B2"
+        },
+        "hhwKaoru": {
+            "color": "#AA33CC",
+            "light": "#D6B2FF"
+        },
+        "hhwHagumi": {
+            "color": "#FF9922",
+            "light": "#FFB2B2"
+        },
+        "hhwKanon": {
+            "color": "#44DDFF",
+            "light": "#A3E0FF"
+        },
+        "hhwMichelle": {
+            "color": "#006599",
+            "light": "#B2E0E6"
+        },
+        "hhwBear": {
+            "color": "#DD33CC",
+            "light": "#FFB2D6"
+        },
+        "mfncMashiro": {
+            "color": "#6677CC",
+            "light": "#B2C4FF"
+        },
+        "mfncToko": {
+            "color": "#EE6666",
+            "light": "#FFB2B2"
+        },
+        "mfncNanami": {
+            "color": "#EE7744",
+            "light": "#FFB2B2"
+        },
+        "mfncTsukushi": {
+            "color": "#EE7788",
+            "light": "#FFB2CC"
+        },
+        "mfncRui": {
+            "color": "#669988",
+            "light": "#B2E0D6"
+        },
+        "rasLayer": {
+            "color": "#CC0000",
+            "light": "#FFB2B2"
+        },
+        "rasLock": {
+            "color": "#AAEE22",
+            "light": "#E0FFB2"
+        },
+        "rasMasking": {
+            "color": "#EEBB44",
+            "light": "#FFF2B2"
+        },
+        "rasPareo": {
+            "color": "#FF99BB",
+            "light": "#FFB2D6"
+        },
+        "rasChu2": {
+            "color": "#00BBFF",
+            "light": "#B2E0FF"
+        },
+        "mgTomori": {
+            "color": "#77bbdd",
+            "light": "#B2E0FF"
+        },
+        "mgAnon": {
+            "color": "#ff8899",
+            "light": "#FFB2D6"
+        },
+        "mgRana": {
+            "color": "#77dd77",
+            "light": "#B2E0B2"
+        },
+        "mgSoyo": {
+            "color": "#ffdd88",
+            "light": "#FFE0B2"
+        },
+        "mgTaki": {
+            "color": "#7777aa",
+            "light": "#B2C4FF"
+        },
+        "mjcUika": {
+            "color": "#BB9955",
+            "light": "#D6C4AA"
+        },
+        "mjcWakaba": {
+            "color": "#779977",
+            "light": "#B2E0B2"
+        },
+        "mjcUmiri": {
+            "color": "#335566",
+            "light": "#B2C4D6"
+        },
+        "mjcNyamu": {
+            "color": "#AA4477",
+            "light": "#D6B2E0"
+        },
+        "mjcTogawa": {
+            "color": "#7799CC",
+            "light": "#B2C4E0"
+        },
+        "mtArale": {
+            "color": "#FFEE55",
+            "light": "#FFF2B2"
+        },
+        "mtNonoka": {
+            "color": "#FFBBCC",
+            "light": "#FFB2D6"
+        },
+        "mtRitsu": {
+            "color": "#4477CC",
+            "light": "#B2C4FF"
+        },
+        "mtMiyako": {
+            "color": "#9977CC",
+            "light": "#D6B2FF"
+        },
+        "mtYuno": {
+            "color": "#EE5577",
+            "light": "#FFB2CC"
+        }
+    }
+    // 彩蛋颜色数据来源萌娘百科
+
+    const colorTypeSelect = document.getElementById('colorTypeSelect');
+    const colorGroupTypeSelect = document.getElementById('colorGroupTypeSelect');
+    let colorGroupTypeSelectValue = colorGroupTypeSelect.value;
+    const colorSelectGroup = document.querySelectorAll('.colorSelectGroup');
+    const colorSelects = document.querySelectorAll('.colorSelect');
+    let lastThemeColor = {
+        "theme": "blue",
+        "firstBeat": "red",
+    }
+
+    colorGroupTypeSelect.addEventListener('change', () => {
+        colorGroupTypeSelectValue = colorGroupTypeSelect.value;
+        showColorSelectGroup();
+    });
+
+    function refreshColorGroupTypeSelect() {
+        // 将彩蛋值存入localStorage
+        if (localStorage.getItem('showVEasterEgg') == null || localStorage.getItem('showVEasterEgg') == 'false') {
+            console.log(showVEasterEgg)
+            localStorage.setItem('showVEasterEgg', showVEasterEgg);
+        }
+        if (localStorage.getItem('showBDEasterEgg') == null || localStorage.getItem('showBDEasterEgg') == 'false') {
+            localStorage.setItem('showBDEasterEgg', showBDEasterEgg);
+        }
+        // 显示或隐藏彩蛋选项
+        const colorGroupTypeSelectOptions = colorGroupTypeSelect.querySelectorAll('option');
+        colorGroupTypeSelectOptions.forEach(option => {
+            if (option.classList.contains('VEasterEgg')) {
+                if (showVEasterEgg) {
+                    option.style.display = "block";
+                } else {
+                    option.style.display = "none";
+                }
+            } else if (option.classList.contains('BDEasterEgg')) {
+                if (showBDEasterEgg) {
+                    option.style.display = "block";
+                } else {
+                    option.style.display = "none";
+                }
+            } else {
+                option.style.display = "block";
+            }
+        });
+    }
+    refreshColorGroupTypeSelect();
+    // 颜色选择下拉框添加事件
+    colorTypeSelect.addEventListener('change', () => {
+        showColorSelectGroup();
+    });
+    // 显示颜色选择组
+    function showColorSelectGroup() {
+        const selectedValue = colorTypeSelect.value;
+        colorSelectGroup.forEach(colorSelect => {
+            if (selectedValue == "") {
+                colorSelect.style.display = "none";
+            } else if (colorSelect.getAttribute('colorGroupType') == colorGroupTypeSelectValue) {
+                colorSelect.style.display = "flex";
+            } else {
+                colorSelect.style.display = "none";
+            }
+        });
+    }
+
+    // 为颜色选择按钮添加点击事件
+    colorSelects.forEach(colorSelect => {
+        colorSelect.addEventListener('click', () => {
+            const selectedColor = colorSelect.value;
+            console.log(selectedColor)
+            setThemeVariables(selectedColor);
+        });
+    });
+
+    // 设置主题色
+    function setThemeVariables(selectedColor = false, colorType = false) {
+        // 当前选择的主题
+        if (colorType == false) {
+            colorType = colorTypeSelect.value;
+        }
+        if (selectedColor != false) {
+            lastThemeColor[colorType] = selectedColor;
+        }
+
+
+        const themeVariables = {
+            '--theme-color': theme[lastThemeColor.theme].color,
+            '--theme-color-light': theme[lastThemeColor.theme].light,
+            '--first-beat-color': theme[lastThemeColor.firstBeat].color,
+            '--first-beat-color-light': theme[lastThemeColor.firstBeat].light,
+        };
+
+        for (const key in themeVariables) {
+            document.documentElement.style.setProperty(key, themeVariables[key]);
+        }
+    }
+
+    setThemeVariables();
+</script>
+<script>
+    const body = document.body;
+    const background = document.getElementById('background');
+    let backgroundBlocks = document.querySelectorAll('.background_block');
+    const bpmDisplay = document.getElementById('bpmDisplay');
+    const beatDisplay = document.getElementById('beatDisplay');
+
+    const bpmInput = document.getElementById('bpmInput');
+    const beatSubtract = document.getElementById('beatSubtract');
+    const bpmInputRange = document.getElementById('bpmInputRange');
+    const beatPlus = document.getElementById('beatPlus');
+    const beatInput = document.getElementById('beat');
+    const soundInput = document.getElementById('sound');
+    const volumeInput = document.getElementById('volume');
+    const firstBeat = document.getElementById('firstBeat');
+    const bodyBackgroundColor = document.getElementById('bodyBackgroundColor');
+    const startButton = document.getElementById('start');
+
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    let beats = parseInt(beatInput.value);
+    let started = false
+    let beatInterval
+    let currentBeat
+    let startTime
+    let beatCount
+
+    // 监听空格键
+    document.addEventListener('keydown', (event) => {
+        if (event.code === 'Space') {
+            event.preventDefault(); // 阻止默认行为
+            if (started) {
+                stop();
+            } else {
+                start();
+            }
+        }
+    });
+
+    // bpm
+    bpmInput.addEventListener('change', () => {
+        bpmInputChange();
+    });
+    bpmInput.addEventListener('input', () => {
+        bpmInputChange();
+    });
+    let lastBpmInputValue = bpmInput.value;
+    function bpmInputChange() {
+        if (bpmInput.value == 3939) {
+            setThemeVariables("miku", "theme");
+            setThemeVariables("mikuHairAccessory", "firstBeat");
+            showVEasterEgg = true;
+            refreshColorGroupTypeSelect();
+        } else if (bpmInput.value == "krkrdkdk") {
+            setThemeVariables("pppKasumi", "theme");
+            setThemeVariables("pppArisa", "firstBeat");
+            showBDEasterEgg = true;
+            refreshColorGroupTypeSelect();
+            return false;
+        }
+        if (parseInt(bpmInput.value) == NaN) {
+            bpmInput.value = lastBpmInputValue;
+            return false;
+        }
+        bpmDisplay.innerText = bpmInput.value;
+        if (bpmInput.value > bpmInputRange.getAttribute('max')) {
+            bpmInputRange.setAttribute('max', bpmInput.value);
+        }
+        bpmInputRange.value = bpmInput.value;
+        if (started) {
+            stop();
+            start();
+        }
+        lastBpmInputValue = bpmInput.value;
+    }
+    bpmInputRange.addEventListener('input', () => {
+        bpmInput.value = bpmInputRange.value;
+        bpmDisplay.innerText = bpmInput.value;
+        if (bpmInput.value == 3939) {
+            setThemeVariables("miku", "theme");
+            setThemeVariables("mikuHairAccessory", "firstBeat");
+            showVEasterEgg = true;
+            refreshColorGroupTypeSelect();
+        }
+        if (started) {
+            stop();
+            start();
+        }
+        lastBpmInputValue = bpmInput.value;
+    });
+
+    // 节拍
+    beatSubtract.addEventListener('click', () => {
+        beats = parseInt(beatInput.value);
+        if (beats > 1) {
+            beatInput.value = beats - 1;
+            beats = parseInt(beatInput.value);
+            initBeatDisplay();
+            if (started) {
+                stop();
+                start();
+            }
+        }
+    });
+    beatInput.addEventListener('change', () => {
+        beats = parseInt(beatInput.value);
+        initBeatDisplay();
+        if (started) {
+            stop();
+            start();
+        }
+    });
+    beatPlus.addEventListener('click', () => {
+        beatInput.value = beats + 1;
+        beats = parseInt(beatInput.value);
+        initBeatDisplay();
+        if (started) {
+            stop();
+            start();
+        }
+    });
+
+    // 可视化效果
+    function initBeatDisplay() {
+        let html = '';
+        let backgroundHtml = '';
+        for (let i = 0; i < beats; i++) {
+            html += `<span class="beat${i == 0 ? " firstBeat" : ""}"></span>`;
+            backgroundHtml += `<div class="background_block${i == 0 ? " firstBeat" : ""}"></div>`;
+        }
+        beatDisplay.innerHTML = html;
+        background.innerHTML = backgroundHtml;
+        backgroundBlocks = document.querySelectorAll('.background_block');
+    }
+    initBeatDisplay();
+    function updateBeatDisplay() {
+        let beatElements = beatDisplay.querySelectorAll('.beat');
+        for (let i = 0; i < beats; i++) {
+            if (i === currentBeat) {
+                beatElements[i].classList.add('active');
+            } else {
+                beatElements[i].classList.remove('active');
+            }
+        }
+    }
+
+    // 首拍音效
+    let firstBeatSound = true;
+    firstBeat.addEventListener('click', () => {
+        firstBeatSound = !firstBeatSound;
+        if (firstBeatSound) {
+            firstBeat.classList.add('checked');
+        } else {
+            firstBeat.classList.remove('checked');
+        }
+    });
+    // 背景变色
+    let bodyBackgroundColorFlag = false;
+    bodyBackgroundColor.addEventListener('click', () => {
+        bodyBackgroundColorFlag = !bodyBackgroundColorFlag;
+        if (bodyBackgroundColorFlag) {
+            bodyBackgroundColor.classList.add('checked');
+        } else {
+            bodyBackgroundColor.classList.remove('checked');
+            for (let i = 0; i < beats; i++) {
+                backgroundBlocks[i].classList.remove('active');
+            }
+        }
+    });
+
+    // 开始按钮
+    startButton.addEventListener('click', () => {
+        if (started) {
+            stop();
+        } else {
+            start();
+        }
+    });
+
+    // 启动节拍器
+    function start() {
+        startButton.classList.add('checked')
+        startButton.innerText = '停止';
+        initBeatDisplay();
+        started = true;
+        startTime = Date.now();
+        beatCount = 0;
+
+        let beatDuration = 60 / parseInt(bpmInput.value) * 1000; // 每拍时长 (毫秒)
+        currentBeat = 0;
+
+        beatInterval = setInterval(() => {
+            beatCount++
+            // console.log(60 * 1000 / ((Date.now() - startTime) / beatCount))
+
+            playSound(currentBeat === 0); // 第一拍特殊音效
+            updateBeatDisplay();
+            currentBeat = (currentBeat + 1) % beats;
+        }, beatDuration);
+    }
+
+    // 停止节拍器
+    function stop() {
+        startButton.classList.remove('checked');
+        startButton.innerText = '开始';
+        started = false;
+        clearInterval(beatInterval);
+    }
+
+    // 音效
+    function playSound(isFirstBeat) {
+        let oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        // if (soundInput.value == "custom") {
+        //     const real = new Float32Array([0, 1, 0.5, 0.25]); // 实部
+        //     const imag = new Float32Array([0, 0.5, 0.25, 0.125]); // 虚部
+        //     const periodicWave = audioContext.createPeriodicWave(real, imag);
+        //     oscillator.setPeriodicWave(periodicWave);
+        // } else {
+        //     oscillator.type = soundInput.value;
+        // }
+        oscillator.type = soundInput.value;
+        oscillator.frequency.setValueAtTime((isFirstBeat && firstBeatSound) ? 880 : 440, audioContext.currentTime);
+
+        let volume = volumeInput.value;
+        if (!isFirstBeat) {
+            volume *= 1.1;
+        }
+        gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        // 改变背景颜色
+        if (bodyBackgroundColorFlag) {
+            // 旧方法
+            // if (isFirstBeat) {
+            //     body.style.animation = "changeBodyColorFirstBeat 0.1s forwards";
+            // } else {
+            //     body.style.animation = "changeBodyColor 0.1s forwards";
+            // }
+            // setTimeout(() => {
+            //     body.style.animation = "";
+            // }, 100);
+
+            // 新方法
+            for (let i = 0; i < beats; i++) {
+                // if (i < currentBeat + 1) {
+                //     backgroundBlocks[i].classList.add('active');
+                // } else {
+                //     backgroundBlocks[i].classList.remove('active');
+                // }
+                // 下版本加入根据选择的乐队随机刷新颜色
+                if (i == currentBeat) {
+                    backgroundBlocks[i].classList.add('active');
+                } else {
+                    backgroundBlocks[i].classList.remove('active');
+                }
+            }
+        }
+
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.1); // 每个音效播放 0.1 秒
+
+    }
+</script>
+
+</html>
