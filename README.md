@@ -3,6 +3,7 @@
 [在线预览](https://bili345679.github.io/metronome/index.html)
 
 v0.6
+[源码](https://github.com/Bili345679/metronome/blob/main/src/metronome_v0.6.html)
 增加主题色功能
 ![v0.6预览图](https://github.com/Bili345679/metronome/blob/main/preview/v0.6.jpg)
 
