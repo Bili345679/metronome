@@ -25,7 +25,7 @@
             font-size: 20px;
         }
 
-        #bpm {
+        #bpmDisplay {
             font-size: 100px;
             margin: 0;
             padding: 0;
@@ -45,7 +45,7 @@
             height: 20px;
             margin: 0 5px;
             background-color: #c4c4c4;
-            border-radius: 50%;
+            border-radius: 3px;
             opacity: 0.5;
         }
 
@@ -60,34 +60,76 @@
         }
 
         .controller {
-            margin: 10px;
+            margin: 5px;
             width: 60%;
             max-width: 300px;
             height: 30px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
 
         .controller span {
             width: 35%;
         }
 
-        .controller input,
-        select {
-            height: 90%;
+        .controller .right {
             width: 55%;
+            height: 90%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .controller input,
+        select,
+        button {
+            width: 100%;
+            height: 100%;
             border: 2px solid #3e6bd7;
             border-radius: 3px;
+            line-height: 100%;
         }
 
         .controller input {
-            height: 70%;
-            width: calc(55% - 10px);
+            width: calc(100% - 10px);
+            height: 72%;
             padding: 2px 3px 2px 3px;
+        }
+
+        .controller #beat {
+            width: calc(100% - 80px);
+            text-align: center;
+        }
+
+        .controller #beatSubtract,
+        #beatPlus {
+            width: 30px;
+            background-color: #3e6bd7;
+            font-size: 25px;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            text-align: center;
         }
 
         #bpmInputRange {
             width: 100%;
+        }
+
+        .controller .radio {
+            width: 40%;
+            background-color: #fff;
+        }
+
+        .controller .radio.checked {
+            width: 40%;
+            background-color: #3e6bd7;
+            color: #FFF;
+        }
+
+        .controller .radio.checked:hover {
+            background-color: #5f87e2;
         }
 
         #start {
@@ -99,59 +141,118 @@
             background-color: #0000;
             border: 2px solid #3e6bd7;
             border-radius: 3px;
+            color: #3e6bd7;
         }
 
         #start:hover {
             background-color: #d0e0ff;
         }
 
-        #start.started {
-            background-color: #eef4ff;
+        #start.checked {
+            background-color: #3e6bd7;
+            color: #FFF;
         }
 
-        #start.started:hover {
-            background-color: #d0e0ff;
+        #start.checked:hover {
+            background-color: #5f87e2;
+        }
+
+        @keyframes changeBodyColorFirstBeat {
+            0% {
+                background-color: "";
+            }
+
+            5% {
+                background-color: #f9c6d5;
+            }
+
+            95% {
+                background-color: #f9c6d5;
+            }
+
+            100% {
+                background-color: "";
+            }
+        }
+
+        @keyframes changeBodyColor {
+            0% {
+                background-color: "";
+            }
+
+            5% {
+                background-color: #cad7f4;
+            }
+
+            95% {
+                background-color: #cad7f4;
+            }
+
+            100% {
+                background-color: "";
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="block">
-        <p id="bpm">120</p>
+        <p id="bpmDisplay">120</p>
         <div id="beatDisplay"></div>
-        <div class="controller"><span>bpm</span><input id="bpmInput" value="120" type="number"></div>
+        <div class="controller">
+            <span>bpm</span>
+            <div class="right">
+                <input id="bpmInput" value="120" type="number">
+            </div>
+        </div>
         <div class="controller"><input type="range" id="bpmInputRange" min="1" max="300" step="1" value="120"></div>
-        <div class="controller"><span>拍号</span>
-            <select id="timeSignature">
-                <option value="4">4/4</option>
-                <option value="3">3/4</option>
-                <option value="6">6/8</option>
-            </select>
+        <div class="controller">
+            <span>节拍</span>
+            <div class="right">
+                <button id="beatSubtract">-</button>
+                <input id="beat" value="4" type="number">
+                <button id="beatPlus">+</button>
+            </div>
         </div>
-        <div class="controller"><span>音效</span>
-            <select id="sound">
-                <!-- <option value="custom">自定义</option> -->
-                <option value="sine">弦波</option>
-                <option value="square">方波</option>
-                <option value="triangle">三角波</option>
-                <option value="sawtooth">锯齿波</option>
-            </select>
+        <div class="controller">
+            <span>音效</span>
+            <div class="right">
+                <select id="sound">
+                    <!-- <option value="custom">自定义</option> -->
+                    <option value="sine">弦波</option>
+                    <option value="square">方波</option>
+                    <option value="triangle">三角波</option>
+                    <option value="sawtooth">锯齿波</option>
+                </select>
+            </div>
         </div>
-        <div class="controller"><span>音量</span>
-            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
+        <div class="controller">
+            <span>音量</span>
+            <div class="right">
+                <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
+            </div>
+        </div>
+        <div class="controller">
+            <button id="firstBeat" class="radio checked">首拍音效</button>
+            <button id="bodyBackgroundColor" class="radio">背景变色</button>
         </div>
         <button id="start">开始</button>
     </div>
 </body>
 <script>
-    const bpmDisplay = document.getElementById('bpm');
+    const body = document.body;
+    const bpmDisplay = document.getElementById('bpmDisplay');
     const beatDisplay = document.getElementById('beatDisplay');
 
     const bpmInput = document.getElementById('bpmInput');
+    const beatSubtract = document.getElementById('beatSubtract');
     const bpmInputRange = document.getElementById('bpmInputRange');
-    const timeSignatureInput = document.getElementById('timeSignature');
+    const beatPlus = document.getElementById('beatPlus');
+    const beatInput = document.getElementById('beat');
     const soundInput = document.getElementById('sound');
     const volumeInput = document.getElementById('volume');
+    const firstBeat = document.getElementById('firstBeat');
+    const bodyBackgroundColor = document.getElementById('bodyBackgroundColor');
     const startButton = document.getElementById('start');
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -162,25 +263,36 @@
     let startTime
     let beatCount
 
-    startButton.addEventListener('click', () => {
-        if (started) {
-            stop();
-        } else {
-            start();
+    // 监听空格键
+    document.addEventListener('keydown', (event) => {
+        if (event.code === 'Space') {
+            event.preventDefault(); // 阻止默认行为
+            if (started) {
+                stop();
+            } else {
+                start();
+            }
         }
     });
 
+    // bpm
+    bpmInput.addEventListener('change', () => {
+        bpmInputChange();
+    });
     bpmInput.addEventListener('input', () => {
+        bpmInputChange();
+    });
+    function bpmInputChange() {
         bpmDisplay.innerText = bpmInput.value;
-        bpmInputRange.value = bpmInput.value;
         if (bpmInput.value > bpmInputRange.getAttribute('max')) {
-            bpmInputRange.getAttribute('max') = bpmInput.value;
+            bpmInputRange.setAttribute('max', bpmInput.value);
         }
+        bpmInputRange.value = bpmInput.value;
         if (started) {
             stop();
             start();
         }
-    });
+    }
     bpmInputRange.addEventListener('input', () => {
         bpmInput.value = bpmInputRange.value;
         bpmDisplay.innerText = bpmInput.value;
@@ -189,15 +301,40 @@
             start();
         }
     });
-    timeSignatureInput.addEventListener('change', () => {
+
+    // 节拍
+    beatSubtract.addEventListener('click', () => {
+        let beats = parseInt(beatInput.value);
+        if (beats > 1) {
+            beatInput.value = beats - 1;
+            initBeatDisplay();
+            if (started) {
+                stop();
+                start();
+            }
+        }
+    });
+    beatInput.addEventListener('change', () => {
         if (started) {
             stop();
             start();
         }
     });
+    beatPlus.addEventListener('click', () => {
+        let beats = parseInt(beatInput.value);
+        if (beats < 16) {
+            beatInput.value = beats + 1;
+            initBeatDisplay();
+            if (started) {
+                stop();
+                start();
+            }
+        }
+    });
 
+    // 可视化效果
     function initBeatDisplay() {
-        let beats = parseInt(timeSignatureInput.value);
+        let beats = parseInt(beatInput.value);
         let html = '';
         for (let i = 0; i < beats; i++) {
             html += `<span class="beat${i == 0 ? " firstBeat" : ""}"></span>`;
@@ -205,9 +342,8 @@
         beatDisplay.innerHTML = html;
     }
     initBeatDisplay();
-
     function updateBeatDisplay() {
-        let beats = parseInt(timeSignatureInput.value);
+        let beats = parseInt(beatInput.value);
         let beatElements = beatDisplay.querySelectorAll('.beat');
         for (let i = 0; i < beats; i++) {
             if (i === currentBeat) {
@@ -218,8 +354,39 @@
         }
     }
 
+    // 首拍音效
+    let firstBeatSound = true;
+    firstBeat.addEventListener('click', () => {
+        firstBeatSound = !firstBeatSound;
+        if (firstBeatSound) {
+            firstBeat.classList.add('checked');
+        } else {
+            firstBeat.classList.remove('checked');
+        }
+    });
+    // 背景变色
+    let bodyBackgroundColorFlag = false;
+    bodyBackgroundColor.addEventListener('click', () => {
+        bodyBackgroundColorFlag = !bodyBackgroundColorFlag;
+        if (bodyBackgroundColorFlag) {
+            bodyBackgroundColor.classList.add('checked');
+        } else {
+            bodyBackgroundColor.classList.remove('checked');
+        }
+    });
+
+    // 开始按钮
+    startButton.addEventListener('click', () => {
+        if (started) {
+            stop();
+        } else {
+            start();
+        }
+    });
+
+    // 启动节拍器
     function start() {
-        startButton.classList.add('started')
+        startButton.classList.add('checked')
         startButton.innerText = '停止';
         initBeatDisplay();
         started = true;
@@ -227,7 +394,7 @@
         beatCount = 0;
 
         let beatDuration = 60 / parseInt(bpmInput.value) * 1000; // 每拍时长 (毫秒)
-        let beats = parseInt(timeSignatureInput.value);
+        let beats = parseInt(beatInput.value);
         currentBeat = 0;
 
         beatInterval = setInterval(() => {
@@ -240,13 +407,15 @@
         }, beatDuration);
     }
 
+    // 停止节拍器
     function stop() {
-        startButton.classList.remove('started');
+        startButton.classList.remove('checked');
         startButton.innerText = '开始';
         started = false;
         clearInterval(beatInterval);
     }
 
+    // 音效
     function playSound(isFirstBeat) {
         let oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
@@ -260,7 +429,7 @@
         //     oscillator.type = soundInput.value;
         // }
         oscillator.type = soundInput.value;
-        oscillator.frequency.setValueAtTime(isFirstBeat ? 880 : 440, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime((isFirstBeat && firstBeatSound) ? 880 : 440, audioContext.currentTime);
 
         let volume = volumeInput.value;
         if (!isFirstBeat) {
@@ -270,9 +439,22 @@
 
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
+
+        // 改变背景颜色
+        if (bodyBackgroundColorFlag) {
+            if (isFirstBeat) {
+                body.style.animation = "changeBodyColorFirstBeat 0.1s forwards";
+            } else {
+                body.style.animation = "changeBodyColor 0.1s forwards";
+            }
+            setTimeout(() => {
+                body.style.animation = "";
+            }, 100);
+        }
+
         oscillator.start();
         oscillator.stop(audioContext.currentTime + 0.1); // 每个音效播放 0.1 秒
-        console.log(60 * 1000 / ((Date.now() - startTime) / beatCount))
+
     }
 </script>
 
